@@ -48,7 +48,8 @@ func main() {
 	}()
 
 	var workNumber int
-	_, err := fmt.Scan("Введите кол-во воркеров", &workNumber)
+	//Введите количество воркеров
+	_, err := fmt.Scan(&workNumber)
 	if err != nil {
 		panic(err)
 	}

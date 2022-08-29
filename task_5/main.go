@@ -1,35 +1,41 @@
+//Разработать программу, которая будет последовательно отправлять значения в канал, а с другой стороны канала — читать.
+//По истечению N секунд программа должна завершаться.
+
 package main
 
 import (
+	"context"
 	"fmt"
+	"os"
 	"time"
 )
 
-func main() {
-	var ch = make(chan int)
-	var timeOut int
-	fmt.Scan(&timeOut)
-
-	var arr = []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
-	go sendToChan(arr, ch)
-	for range arr {
-		time.Sleep(1 * time.Second)
-		fmt.Printf("Приняли элемент %v\n", <-ch)
-
+func Worker(ch chan int, ctx context.Context) {
+	for {
+		select {
+		case data := <-ch:
+			fmt.Println(data)
+		case <-ctx.Done():
+			os.Exit(0)
+		}
 	}
-
 }
 
-func sendToChan(arr []int, ch chan int) {
+func main() {
+	var timeout int
 
-	for _, val := range arr {
-		go func(val int) {
-			ch <- val
-		}(val)
+	//Введите время для оставноки программы
+	fmt.Scan(&timeout)
 
-		fmt.Printf("Отправили %v елемент\n", val)
-		time.Sleep(3 * time.Second)
-
+	// Контекст с таймером по истечении которого программа завершает работу
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
+	defer cancel()
+	ch := make(chan int)
+	// Воркер который считывает
+	go Worker(ch, ctx)
+	// Записываются данные в канал
+	for i := 0; ; i++ {
+		ch <- i
+		time.Sleep(time.Second * 1)
 	}
-
 }
